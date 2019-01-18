@@ -1,0 +1,7 @@
+description="p6spy-oracle"
+
+dependencies {
+    runtime files('./src/main/resources/lib/ojdbc6.jar')
+    compile 'p6spy:p6spy:3.8.1'
+}
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <Configuration>
+    <Properties>
+      <Property name="logPath">/opt/logs/finance</Property>
+    </Properties>
+   <Appenders>
+     <Console name="Console" target="SYSTEM_OUT">
+       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+     </Console>
+     <RollingFile name="FILE" fileName="${logPath}/finance.log" filePattern="${logPath}/finance-%d{yyyy-MM-dd-HH}.log">
+       <PatternLayout pattern="%date %5level [%thread] (%file:%line) - %m%n"/>
+       <Policies>
+         <TimeBasedTriggeringPolicy/>
+       </Policies>
+     </RollingFile>
+   </Appenders>
+   <Loggers>
+   	 <logger name="com.ftvalue.finance" level="info" />
+     <Root level="info">
+       <AppenderRef ref="Console"/>
+       <AppenderRef ref="FILE"/>
+     </Root>
+   </Loggers>
+</Configuration>
