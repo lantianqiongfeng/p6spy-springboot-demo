@@ -1,0 +1,111 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.14.RELEASE'
+	}
+	repositories {
+		maven{
+			credentials {
+				username 'deploy'
+				password 'Value888'
+			}
+			url 'http://nexus.cloud.ftvalue.com/nexus/content/groups/public/'
+		}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+configure(rootProject) {
+	task wrapper(type: Wrapper) {
+		gradleVersion = '4.6'
+		distributionUrl = "https://services.gradle.org/distributions/gradle-"+gradleVersion+"-bin.zip"
+		description = "Generates gradlew[.bat] scripts"
+	}
+}
+
+ext {
+	fastJsonVersion = '1.2.51'
+	druidVersion = '1.1.10'
+	springbootMybatisVersion = '1.3.2'
+	lombokVersion = '1.18.2'
+	jodaTimeVersion = '2.10'
+	commonsLang3Version = '3.8.1'
+}
+
+allprojects {
+  	gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        	options.encoding = 'UTF-8'
+        }
+    }
+}
+
+
+// 所有子项目的通用配置
+configure(allprojects) { project ->
+
+	group = "com.cah"
+
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'maven'
+
+	// JVM 版本号要求
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+
+	// java编译的时候缺省状态下会因为中文字符而失败
+	[compileJava,compileTestJava,javadoc]*.options*.encoding = 'UTF-8'
+
+	repositories {
+		maven{
+			credentials {
+				username 'deploy'
+				password 'Value888'
+			}
+			url 'http://nexus.cloud.ftvalue.com/nexus/content/groups/public/'
+		}
+	}
+
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from sourceSets.main.allSource
+	}
+
+	artifacts {
+		archives jar
+		archives sourcesJar
+	}
+
+	// 所有需要忽略的包定义在此
+	configurations {
+		all*. exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+
+	jar {
+		manifest.attributes["Implementation-Title"] = project.name
+		manifest.attributes["Implementation-Version"] = project.version
+		manifest.attributes["Automatic-Module-Name"] = project.name.replace('-', '.')  // for Jigsaw
+		manifest.attributes["Created-By"] =
+				"${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
+
+		exclude ('**/application.yml')
+		exclude ('**/log4j2.xml')
+	}
+
+	dependencies {
+		compile "org.springframework.boot:spring-boot-starter-web"
+		compile "org.springframework.boot:spring-boot-starter-log4j2"
+		compile "org.springframework.boot:spring-boot-starter-actuator"
+		compile "org.springframework.boot:spring-boot-starter-aop"
+		compile "com.alibaba:druid-spring-boot-starter:${druidVersion}"
+		compile "org.mybatis.spring.boot:mybatis-spring-boot-starter:${springbootMybatisVersion}"
+		compile "org.apache.commons:commons-lang3:${commonsLang3Version}"
+		compile "org.projectlombok:lombok:${lombokVersion}"
+		compile "com.alibaba:fastjson:${fastJsonVersion}"
+		compile "joda-time:joda-time:${jodaTimeVersion}"
+		testCompile "org.springframework.boot:spring-boot-starter-test"
+	}
+}
